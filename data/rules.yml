@@ -17,4 +17,17 @@ rules:
   - slot_was_set:
     - requested_slot: null
   - action: action_select_random_topic
+  - action: action_select_random_word
+  - action: utter_game_settings
+  - action: game_form
+  - active_loop: game_form
+
+- rule: Finish game
+  condition:
+  - active_loop: game_form
+  steps:
+  - action: game_form
+  - active_loop: null
+  - slot_was_set:
+    - requested_slot: null
   - action: utter_game_settings

@@ -2,9 +2,10 @@ import random
 
 from typing import Any, Text, Dict, List
 
-from rasa_sdk import Action, Tracker
+from rasa_sdk import Action, Tracker, FormValidationAction
 from rasa_sdk.events import SlotSet
 from rasa_sdk.executor import CollectingDispatcher
+from rasa_sdk.types import DomainDict
 
 from actions.utils import DB
 
@@ -24,9 +25,11 @@ class ActionSelectRandomTopic(Action):
 
         return random.choice(topics)
 
-    def run(self, dispatcher: CollectingDispatcher,
+    def run(self, 
+            dispatcher: CollectingDispatcher,
             tracker: Tracker,
-            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+            domain: DomainDict
+        ) -> List[Dict[Text, Any]]:
 
         level = tracker.get_slot("level")
         topic = tracker.get_slot("topic")
@@ -50,9 +53,12 @@ class ActionSelectRandomWords(Action):
 
         return random.choice(words)
 
-    def run(self, dispatcher: CollectingDispatcher,
+    def run(
+            self, 
+            dispatcher: CollectingDispatcher,
             tracker: Tracker,
-            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+            domain: DomainDict
+        ) -> List[Dict[Text, Any]]:
 
         level = tracker.get_slot("level")
         topic = tracker.get_slot("topic")
@@ -63,3 +69,61 @@ class ActionSelectRandomWords(Action):
         return [SlotSet("word", new_word)]
     
 
+class GenerateAnswer(Action):
+
+    def name(self) -> Text:
+        return "action_ask_finish_game"
+
+    def build_prompt(self, mode: str, level: str, word: str):
+        pass
+
+    def retrieve_context(self) -> List[Dict[Text, Text]]:
+        pass
+
+    def run(
+        self, 
+        dispatcher: CollectingDispatcher, 
+        tracker: Tracker, 
+        domain: DomainDict
+        ) -> List:
+        
+        dispatcher.utter_message(
+            response="utter_llm_output",
+            text="LLM output"
+        )
+
+        return []
+    
+class ValidateRestaurantForm(FormValidationAction):
+
+    def name(self) -> Text:
+        return "validate_game_form"
+
+    async def extract_finish_game(
+        self, 
+        dispatcher: CollectingDispatcher, 
+        tracker: Tracker, 
+        domain: DomainDict
+    ) -> Dict[Text, Any]:
+
+        # retrieve value from mapping conditions
+        slot_value = tracker.get_slot("finish_game")
+        
+        if False:
+            # check if user win game
+            return {"finish_game": True}
+
+        return {"finish_game": slot_value}
+    
+    async def validate_finish_game(
+        self,
+        slot_value: Any,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: DomainDict,
+    ) -> Dict[Text, Any]:
+
+        if slot_value is True:
+            return {"finish_game": slot_value} # finish game
+        else:
+            return {"finish_game": None} # continue game
