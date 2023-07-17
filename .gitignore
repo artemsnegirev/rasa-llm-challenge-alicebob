@@ -1,0 +1,7 @@
+__pycache__
+.vscode
+.rasa
+models
+other
+venv
+credentials.yml

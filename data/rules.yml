@@ -1,0 +1,20 @@
+version: "3.1"
+
+rules:
+- rule: Handle first touch
+  steps:
+  - intent: start
+  - action: utter_get_started
+  - action: game_settings_form
+  - active_loop: game_settings_form
+
+- rule: Submit game settings
+  condition:
+  - active_loop: game_settings_form
+  steps:
+  - action: game_settings_form
+  - active_loop: null
+  - slot_was_set:
+    - requested_slot: null
+  - action: action_select_random_topic
+  - action: utter_game_settings

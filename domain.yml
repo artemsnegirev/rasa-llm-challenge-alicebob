@@ -1,0 +1,74 @@
+version: "3.1"
+
+intents:
+  - start
+  - affirm
+  - deny
+  - inform
+  # - play_game
+  # - finish_game
+  # - change_word
+  # - set_topic
+  # - set_game_mode
+  # - set_level
+
+entities:
+- level
+- game_mode
+
+actions:
+- action_select_random_topic
+- action_select_random_word
+
+slots:
+  level:
+    type: text
+    mappings:
+    - type: from_entity
+      entity: level
+  game_mode:
+    type: categorical
+    values:
+      - guess
+      - explain
+    mappings:
+    - type: from_entity
+      entity: game_mode
+  topic:
+    type: text
+    mappings:
+    - type: custom
+  word:
+    type: text
+    mappings:
+    - type: custom
+
+forms:
+  game_settings_form:
+    required_slots:
+      - level
+      - game_mode
+
+responses:
+  utter_get_started:
+  - text: "Welcome"
+  utter_ask_level:
+  - text: "What is your language level?"
+    buttons:
+    - title: "beginner"
+      payload: '/inform{{"level":"beginner"}}'
+    - title: "advanced"
+      payload: '/inform{{"level":"advanced"}}'
+  utter_ask_game_mode:
+  - text: "Would you like to guess words or try to explain them?"
+    buttons:
+    - title: "guess"
+      payload: '/inform{{"game_mode":"guess"}}'
+    - title: "explain"
+      payload: '/inform{{"game_mode":"explain"}}'
+  utter_game_settings:
+  - text: "{level} {game_mode} {topic} {word}"
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true
