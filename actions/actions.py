@@ -5,9 +5,10 @@ from typing import Any, Text, Dict, List
 from rasa_sdk import Action, Tracker, FormValidationAction
 from rasa_sdk.events import SlotSet
 from rasa_sdk.executor import CollectingDispatcher
+from rasa_sdk.interfaces import Tracker
 from rasa_sdk.types import DomainDict
 
-from actions.utils import DB
+from actions.utils import database, prompt_builder, openai_runner
 
 
 class ActionSelectRandomTopic(Action):
@@ -19,7 +20,7 @@ class ActionSelectRandomTopic(Action):
         """"""
 
         topics = [
-            item for item in DB.get_topics(level) 
+            item for item in database.get_topics(level) 
             if item not in exclude
         ]
 
@@ -47,7 +48,7 @@ class ActionSelectRandomWords(Action):
         """"""
 
         words = [
-            item for item in DB.get_words(level, topic) 
+            item for item in database.get_words(level, topic) 
             if item not in exclude
         ]
 
@@ -67,18 +68,59 @@ class ActionSelectRandomWords(Action):
         new_word = self.get_random_word(level, topic, [word])
 
         return [SlotSet("word", new_word)]
+
+class ActionBeginOfTheGame(Action):
+    # creates fake event for context retrieving
+
+    def name(self) -> Text:
+        return "action_begin_of_the_game"
     
+    def run(self, dispatcher, tracker, domain) -> List:
+        return []
 
 class GenerateAnswer(Action):
 
     def name(self) -> Text:
         return "action_ask_finish_game"
 
-    def build_prompt(self, mode: str, level: str, word: str):
-        pass
+    def get_prompt(self, tracker: Tracker) -> Text:
+        """"""
+        
+        return prompt_builder(
+            game_mode=tracker.get_slot("game_mode"),
+            level=tracker.get_slot("level"),
+            word=tracker.get_slot("word")
+        )
+    
+    def get_llm_response(self, prompt: str, context: list) -> Text:
+        """"""
 
-    def retrieve_context(self) -> List[Dict[Text, Text]]:
-        pass
+        messages = [{"role": "system", "content": prompt}]
+        messages = messages + context
+
+        return openai_runner(messages)
+
+    def get_messages(self, tracker: Tracker) -> List[Dict[Text, Text]]:
+        """"""
+
+        events = tracker.events_after_latest_restart()
+
+        for idx in range(len(events) - 1, -1, -1):
+            if (
+                events[idx]["event"] == "action" and
+                events[idx]["name"] == "action_begin_of_the_game"
+            ):
+                break
+        
+        messages = []
+        for item in events[idx+1:]:
+            if item["event"] in ["user", "bot"]:
+                messages.append({
+                    "role": item["event"], 
+                    "content": item["text"]
+                })
+
+        return messages
 
     def run(
         self, 
@@ -87,14 +129,19 @@ class GenerateAnswer(Action):
         domain: DomainDict
         ) -> List:
         
+        prompt = self.get_prompt(tracker)
+        messages = self.get_messages(tracker)
+        
+        response = self.get_llm_response(prompt, messages)
+
         dispatcher.utter_message(
             response="utter_llm_output",
-            text="LLM output"
+            text=response
         )
 
         return []
     
-class ValidateRestaurantForm(FormValidationAction):
+class ValidateGameForm(FormValidationAction):
 
     def name(self) -> Text:
         return "validate_game_form"

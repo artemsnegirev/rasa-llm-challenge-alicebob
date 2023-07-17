@@ -21,6 +21,7 @@ actions:
 - action_select_random_word
 - action_ask_finish_game
 - validate_game_form
+- action_begin_of_the_game
 
 slots:
   level:

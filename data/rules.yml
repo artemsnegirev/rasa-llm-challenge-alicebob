@@ -19,6 +19,7 @@ rules:
   - action: action_select_random_topic
   - action: action_select_random_word
   - action: utter_game_settings
+  - action: action_begin_of_the_game
   - action: game_form
   - active_loop: game_form
 
