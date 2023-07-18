@@ -76,12 +76,12 @@ class ActionBeginOfTheGame(Action):
         return "action_begin_of_the_game"
     
     def run(self, dispatcher, tracker, domain) -> List:
-        return []
+        return [SlotSet("game_status", None)]
 
 class GenerateAnswer(Action):
 
     def name(self) -> Text:
-        return "action_ask_finish_game"
+        return "action_ask_game_status"
 
     def get_prompt(self, tracker: Tracker) -> Text:
         """"""
@@ -146,7 +146,7 @@ class ValidateGameForm(FormValidationAction):
     def name(self) -> Text:
         return "validate_game_form"
 
-    async def extract_finish_game(
+    async def extract_game_status(
         self, 
         dispatcher: CollectingDispatcher, 
         tracker: Tracker, 
@@ -154,15 +154,15 @@ class ValidateGameForm(FormValidationAction):
     ) -> Dict[Text, Any]:
 
         # retrieve value from mapping conditions
-        slot_value = tracker.get_slot("finish_game")
+        slot_value = tracker.get_slot("game_status")
         
         if False:
             # check if user win game
-            return {"finish_game": True}
+            return {"game_status": True}
 
-        return {"finish_game": slot_value}
+        return {"game_status": slot_value}
     
-    async def validate_finish_game(
+    async def validate_game_status(
         self,
         slot_value: Any,
         dispatcher: CollectingDispatcher,
@@ -170,7 +170,20 @@ class ValidateGameForm(FormValidationAction):
         domain: DomainDict,
     ) -> Dict[Text, Any]:
 
-        if slot_value is True:
-            return {"finish_game": slot_value} # finish game
+        if slot_value is not None:
+            return {"game_status": slot_value} # finish game
         else:
-            return {"finish_game": None} # continue game
+            return {"game_status": None} # continue game
+
+class ActionResetSettings(Action):
+
+    def name(self) -> Text:
+        return "action_reset_settings"
+
+    def run(self, dispatcher, tracker, domain) -> List[Dict[Text, Any]]:
+        """"""
+
+        return [
+            SlotSet(slot_name, None)
+            for slot_name in ["game_mode", "level", "topic"]
+        ]

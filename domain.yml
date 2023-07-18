@@ -5,12 +5,7 @@ intents:
   - affirm
   - deny
   - inform
-  - finish_game
-  # - play_game
-  # - change_word
-  # - set_topic
-  # - set_game_mode
-  # - set_level
+  - change_settings
 
 entities:
 - level
@@ -19,9 +14,10 @@ entities:
 actions:
 - action_select_random_topic
 - action_select_random_word
-- action_ask_finish_game
+- action_ask_game_status
 - validate_game_form
 - action_begin_of_the_game
+- action_reset_settings
 
 slots:
   level:
@@ -45,15 +41,16 @@ slots:
     type: text
     mappings:
     - type: custom
-  finish_game:
-    type: bool
+  game_status:
+    type: categorical
+    values:
+      - completed
+      - change_setting
     mappings:
       - type: custom
       - type: from_trigger_intent
-        intent: finish_game
-        value: true
-        conditions:
-        - active_loop: game_form
+        value: change_settings
+        intent: change_settings
 
 forms:
   game_settings_form:
@@ -62,7 +59,7 @@ forms:
       - game_mode
   game_form:
     required_slots:
-      - finish_game
+      - game_status
 
 responses:
   utter_get_started:
@@ -86,8 +83,10 @@ responses:
   utter_llm_output:
   - text: "{text}"
     buttons:
-    - title: "finish"
-      payload: "/finish_game"
+    - title: "change settings"
+      payload: "/change_settings"
+  utter_lets_change_settings:
+  - text: "Alright! Let's change settings"
 
 session_config:
   session_expiration_time: 60
