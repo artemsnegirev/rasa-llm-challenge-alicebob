@@ -1,11 +1,6 @@
 version: "3.1"
 
 nlu:
-- intent: start
-  examples: |
-    - "/start"
-    - welcome
-
 - intent: affirm
   examples: |
     - yes
@@ -24,8 +19,3 @@ nlu:
     - don't like that
     - no way
     - not really
-
-- intent: deny
-  examples: |
-    - my level is advanced
-    - my level beginner

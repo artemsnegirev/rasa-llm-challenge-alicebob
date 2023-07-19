@@ -5,7 +5,8 @@ intents:
   - affirm
   - deny
   - inform
-  - change_settings
+  - game_completed
+  - start_game
 
 entities:
 - level
@@ -17,40 +18,35 @@ actions:
 - action_ask_game_status
 - validate_game_form
 - action_begin_of_the_game
-- action_reset_settings
 
 slots:
   level:
     type: text
+    influence_conversation: false
     mappings:
     - type: from_entity
       entity: level
   game_mode:
-    type: categorical
-    values:
-      - guess
-      - explain
+    type: text
+    influence_conversation: false
     mappings:
     - type: from_entity
       entity: game_mode
   topic:
     type: text
+    influence_conversation: false
     mappings:
     - type: custom
   word:
     type: text
+    influence_conversation: false
     mappings:
     - type: custom
   game_status:
-    type: categorical
-    values:
-      - completed
-      - change_setting
+    type: text
+    influence_conversation: false
     mappings:
       - type: custom
-      - type: from_trigger_intent
-        value: change_settings
-        intent: change_settings
 
 forms:
   game_settings_form:
@@ -80,11 +76,11 @@ responses:
       payload: '/inform{{"game_mode":"explain"}}'
   utter_game_settings:
   - text: "{level} {game_mode} {topic} {word}"
+    buttons:
+    - title: "start"
+      payload: "/start_game"
   utter_llm_output:
   - text: "{text}"
-    buttons:
-    - title: "change settings"
-      payload: "/change_settings"
   utter_lets_change_settings:
   - text: "Alright! Let's change settings"
 

@@ -3,6 +3,9 @@ import json
 import openai
 
 
+END_OF_GAME_MARKER = "@COMPLETED"
+
+
 class Database:
     def get_topics(self, level: str) -> list[str]:
         ...

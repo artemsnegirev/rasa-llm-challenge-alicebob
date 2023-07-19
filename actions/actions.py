@@ -8,7 +8,12 @@ from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.interfaces import Tracker
 from rasa_sdk.types import DomainDict
 
-from actions.utils import database, prompt_builder, openai_runner
+from actions.utils import (
+    database, 
+    prompt_builder, 
+    openai_runner,
+    END_OF_GAME_MARKER
+)
 
 
 class ActionSelectRandomTopic(Action):
@@ -70,7 +75,7 @@ class ActionSelectRandomWords(Action):
         return [SlotSet("word", new_word)]
 
 class ActionBeginOfTheGame(Action):
-    # creates fake event for context retrieving
+    # set game_status to None
 
     def name(self) -> Text:
         return "action_begin_of_the_game"
@@ -78,11 +83,31 @@ class ActionBeginOfTheGame(Action):
     def run(self, dispatcher, tracker, domain) -> List:
         return [SlotSet("game_status", None)]
 
-class GenerateAnswer(Action):
+# fake action, actual response comes from validation action
+class ActionAskGameStatus(Action):
 
     def name(self) -> Text:
         return "action_ask_game_status"
+    
+    def run(self, dispatcher, tracker, domain) -> List:
+        return []
+    
+class ValidateGameForm(FormValidationAction):
 
+    def name(self) -> Text:
+        return "validate_game_form"
+
+    def get_llm_response(self, tracker: Tracker) -> Text:
+        """"""
+
+        prompt = self.get_prompt(tracker)
+        context = self.get_context(tracker)
+
+        messages = [{"role": "system", "content": prompt}]
+        messages = messages + context
+
+        return openai_runner(messages)
+    
     def get_prompt(self, tracker: Tracker) -> Text:
         """"""
         
@@ -91,16 +116,8 @@ class GenerateAnswer(Action):
             level=tracker.get_slot("level"),
             word=tracker.get_slot("word")
         )
-    
-    def get_llm_response(self, prompt: str, context: list) -> Text:
-        """"""
 
-        messages = [{"role": "system", "content": prompt}]
-        messages = messages + context
-
-        return openai_runner(messages)
-
-    def get_messages(self, tracker: Tracker) -> List[Dict[Text, Text]]:
+    def get_context(self, tracker: Tracker) -> List[Dict[Text, Text]]:
         """"""
 
         events = tracker.events_after_latest_restart()
@@ -122,30 +139,6 @@ class GenerateAnswer(Action):
 
         return messages
 
-    def run(
-        self, 
-        dispatcher: CollectingDispatcher, 
-        tracker: Tracker, 
-        domain: DomainDict
-        ) -> List:
-        
-        prompt = self.get_prompt(tracker)
-        messages = self.get_messages(tracker)
-        
-        response = self.get_llm_response(prompt, messages)
-
-        dispatcher.utter_message(
-            response="utter_llm_output",
-            text=response
-        )
-
-        return []
-    
-class ValidateGameForm(FormValidationAction):
-
-    def name(self) -> Text:
-        return "validate_game_form"
-
     async def extract_game_status(
         self, 
         dispatcher: CollectingDispatcher, 
@@ -153,37 +146,22 @@ class ValidateGameForm(FormValidationAction):
         domain: DomainDict
     ) -> Dict[Text, Any]:
 
-        # retrieve value from mapping conditions
-        slot_value = tracker.get_slot("game_status")
+        slot_value = None
+
+        # use previous context to generate next response
+        response = self.get_llm_response(tracker)
+
+        # check if llm sent marker of completed game
+        if END_OF_GAME_MARKER in response:
+            response = response.replace(END_OF_GAME_MARKER, "").strip()
+            
+            # mark this game as completed
+            slot_value = "completed"
         
-        if False:
-            # check if user win game
-            return {"game_status": True}
-
+        # actual ask for game_status slot
+        dispatcher.utter_message(
+            response="utter_llm_output",
+            text=response
+        )
+        
         return {"game_status": slot_value}
-    
-    async def validate_game_status(
-        self,
-        slot_value: Any,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
-        domain: DomainDict,
-    ) -> Dict[Text, Any]:
-
-        if slot_value is not None:
-            return {"game_status": slot_value} # finish game
-        else:
-            return {"game_status": None} # continue game
-
-class ActionResetSettings(Action):
-
-    def name(self) -> Text:
-        return "action_reset_settings"
-
-    def run(self, dispatcher, tracker, domain) -> List[Dict[Text, Any]]:
-        """"""
-
-        return [
-            SlotSet(slot_name, None)
-            for slot_name in ["game_mode", "level", "topic"]
-        ]

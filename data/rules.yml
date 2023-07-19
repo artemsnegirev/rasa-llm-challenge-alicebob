@@ -18,13 +18,16 @@ rules:
     - requested_slot: null
   - action: action_select_random_topic
   - action: action_select_random_word
-  - action: utter_game_settings
+  - action: utter_game_settings  
+
+- rule: Start game
+  steps:
+  - intent: start_game
   - action: action_begin_of_the_game
   - action: game_form
   - active_loop: game_form
-  wait_for_user_input: false
 
-- rule: Finish game successfully and start another one
+- rule: Finish game successfully
   condition:
   - active_loop: game_form
   steps:
@@ -32,26 +35,5 @@ rules:
   - active_loop: null
   - slot_was_set:
     - requested_slot: null
-    - game_status: completed
-  - action: utter_game_settings
-  # start next turn
   - action: action_select_random_word
-  - action: action_begin_of_the_game
-  - action: game_form
-  - active_loop: game_form
-
-- rule: Finish game to change settings
-  condition:
-  - active_loop: game_form
-  steps:
-  - action: game_form
-  - active_loop: null
-  - slot_was_set:
-    - requested_slot: null
-    - game_status: change_settings
-  # reset settings
-  - action: utter_lets_change_settings
-  - action: action_reset_settings
-  # start settings form
-  - action: game_settings_form
-  - active_loop: game_settings_form
+  - action: utter_game_settings
