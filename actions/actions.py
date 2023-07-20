@@ -185,3 +185,8 @@ class ValidateGameForm(FormValidationAction):
         )
         
         return {"game_status": slot_value}
+    
+    def validate_game_status(self, slot_value, dispatcher, tracker, domain) -> Dict[Text, Any]:
+        """just returns same value to turn of warnings"""
+
+        return {"game_status": slot_value}
