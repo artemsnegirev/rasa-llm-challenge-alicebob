@@ -102,6 +102,6 @@ class OpenaiRunner(LLMRunner):
         return response.choices[0].message["content"]
 
 
-database = JsonDatabase.from_file("data/vocab.json")
+vocab_database = JsonDatabase.from_file("data/vocab.json")
 prompt_builder = PromptBuilder.from_file("data/prompts.json")
 openai_runner = OpenaiRunner(model="gpt-3.5-turbo")

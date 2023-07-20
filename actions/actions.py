@@ -9,13 +9,14 @@ from rasa_sdk.interfaces import Tracker
 from rasa_sdk.types import DomainDict
 
 from actions.utils import (
-    database, 
+    vocab_database, 
     prompt_builder, 
     openai_runner
 )
 
 
 class ActionSelectRandomTopic(Action):
+    """selects word by given level"""
 
     def name(self) -> Text:
         return "action_select_random_topic"
@@ -24,7 +25,7 @@ class ActionSelectRandomTopic(Action):
         """"""
 
         topics = [
-            item for item in database.get_topics(level) 
+            item for item in vocab_database.get_topics(level) 
             if item not in exclude
         ]
 
@@ -44,6 +45,7 @@ class ActionSelectRandomTopic(Action):
         return [SlotSet("topic", new_topic)]
 
 class ActionSelectRandomWords(Action):
+    """selects word by given level and topic"""
 
     def name(self) -> Text:
         return "action_select_random_word"
@@ -52,7 +54,7 @@ class ActionSelectRandomWords(Action):
         """"""
 
         words = [
-            item for item in database.get_words(level, topic) 
+            item for item in vocab_database.get_words(level, topic) 
             if item not in exclude
         ]
 
@@ -74,7 +76,7 @@ class ActionSelectRandomWords(Action):
         return [SlotSet("word", new_word)]
 
 class ActionBeginOfTheGame(Action):
-    # set game_status to None
+    """sets game_status to None"""
 
     def name(self) -> Text:
         return "action_begin_of_the_game"
@@ -82,8 +84,8 @@ class ActionBeginOfTheGame(Action):
     def run(self, dispatcher, tracker, domain) -> List:
         return [SlotSet("game_status", None)]
 
-# fake action, actual response comes from validation action
 class ActionAskGameStatus(Action):
+    """fake action, actual response comes from validation action"""
 
     def name(self) -> Text:
         return "action_ask_game_status"
@@ -92,6 +94,7 @@ class ActionAskGameStatus(Action):
         return []
     
 class ValidateGameForm(FormValidationAction):
+    """checks if game_status completed and sends teacher response"""
 
     def name(self) -> Text:
         return "validate_game_form"
@@ -118,7 +121,7 @@ class ValidateGameForm(FormValidationAction):
         )
 
     def get_context(self, tracker: Tracker) -> List[Dict[Text, Text]]:
-        """"""
+        """retrievs bot/user messages just after action_begin_of_the_game"""
 
         events = tracker.events_after_latest_restart()
 
@@ -145,6 +148,8 @@ class ValidateGameForm(FormValidationAction):
         return messages
 
     def is_game_completed(self, tracker: Tracker, last_bot_message: str) -> bool:
+        """checks if target word was messaged by user/bot"""
+
         context = self.get_context(tracker)
         
         messages = [c["content"] for c in context] + [last_bot_message]
@@ -166,11 +171,13 @@ class ValidateGameForm(FormValidationAction):
         slot_value = None
         response_template = "utter_teacher_response"
 
-        # use previous context to generate next response
+        # use dialog context to generate next response
         response_text = self.get_teacher_response(tracker)
 
         # check if context has any markers of completed game
         if self.is_game_completed(tracker, response_text):
+            # when bot correctly names target word in `explain` mode
+            # use predefined template to inform user and give feedback
             if tracker.get_slot("game_mode") == "explain":
                 response_text = tracker.get_slot("word")
                 response_template = "utter_correct_word"

@@ -8,7 +8,7 @@ rules:
   - action: game_settings_form
   - active_loop: game_settings_form
 
-- rule: Submit game settings
+- rule: Setup game and provide instructions
   condition:
   - active_loop: game_settings_form
   steps:
