@@ -102,26 +102,6 @@ class OpenaiRunner(LLMRunner):
         return response.choices[0].message["content"]
 
 
-_debug_db = {
-    "beginner": {
-        "topic_a": ["w_a1", "w_a2"],
-        "topic_b": ["w_b1", "w_b2"],
-    },
-    "advanced": {
-        "topic_c": ["w_c1", "w_c2"],
-        "topic_d": ["w_d1", "w_d2"],
-    },
-}
-
-_debug_prompts = {
-    "guess": """
-prompt mode=guess word={word} level={level}
-""",
-    "explain": """
-prompt mode=explain topic={topic} level={level}
-"""
-}
-
-database = JsonDatabase.from_dict(_debug_db)
-prompt_builder = PromptBuilder.from_dict(_debug_prompts)
+database = JsonDatabase.from_file("data/vocab.json")
+prompt_builder = PromptBuilder.from_file("data/prompts.json")
 openai_runner = OpenaiRunner(model="gpt-3.5-turbo")

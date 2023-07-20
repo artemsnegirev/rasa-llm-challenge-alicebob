@@ -1,0 +1,12 @@
+{
+    "beginner": {
+        "computer": ["computer", "information", "laptop", "monitor", "keyboard", "calculator", "website"],
+        "animals": ["tiger", "camel", "shark", "penguin", "spider", "deer", "eagle"],
+        "city": ["highway", "district", "downtown", "market", "church", "prison", "library"]
+    },
+    "advanced": {
+        "professions": ["bartender", "cashier", "florist", "sheriff", "psychologist", "plumber", "spy"],
+        "gym": ["treadmill", "mat", "aerobics", "crossfit", "barbell", "dumbbell", "multigym"],
+        "medieval": ["knight", "sword", "duke", "castle", "king", "arrow", "emblem"]
+    }
+}
