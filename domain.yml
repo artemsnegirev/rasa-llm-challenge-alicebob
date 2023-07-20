@@ -69,7 +69,7 @@ responses:
     buttons:
     - title: "I'm a beginner"
       payload: '/inform{{"level":"beginner"}}'
-    - title: "I'm a experienced"
+    - title: "I'm experienced"
       payload: '/inform{{"level":"advanced"}}'
   utter_ask_game_mode:
   - text: "Alice: Thanks! And choose game mode you prefered:"
@@ -88,7 +88,7 @@ responses:
     - title: "I do!"
       payload: "/start_game"
     - title: "Change settings (will restart)"
-      payload: '/restart'
+      payload: "/restart"
   - text: 'Alice: Try to guess word related to the topic "{topic}"'
     condition:
         - type: slot
@@ -98,7 +98,7 @@ responses:
     - title: "Ready!"
       payload: "/start_game"
     - title: "Change settings (will restart)"
-      payload: '/restart'
+      payload: "/restart"
   utter_teacher_response:
   - text: "Bob: {payload}"
   utter_correct_word:
