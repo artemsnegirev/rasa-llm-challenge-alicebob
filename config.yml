@@ -11,13 +11,6 @@ assistant_id: 20230715-114854-crazy-loop
 language: en
 
 pipeline:
-  - name: WhitespaceTokenizer
-  - name: RegexFeaturizer
-  - name: LexicalSyntacticFeaturizer
-  - name: CountVectorsFeaturizer
-  - name: DIETClassifier
-    epochs: 10
-  - name: EntitySynonymMapper
   - name: FallbackClassifier
     threshold: 0.3
     ambiguity_threshold: 0.1
