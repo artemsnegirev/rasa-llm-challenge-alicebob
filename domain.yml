@@ -56,44 +56,57 @@ forms:
 
 responses:
   utter_get_started:
-  - text: "Alice: Welcome"
+  - text: |
+      Alice: We'll play a game called Alias to improve your vocabulary. I manage the game. Bob is your teacher and he plays with you.
+      
+      Alias basic rules:
+      - player A explains the given word using descriptions, synonyms and antonyms, but it is forbidden to use the same root words
+      - player B tries to guess the word that player A explains, and also asks leading questions
+      
+      Let me ask you a couple of questions and we'll get started!
   utter_ask_level:
-  - text: "Alice: What is your language level?"
+  - text: "Alice: Please select you language level, so I can adapt game's difficult to you:"
     buttons:
-    - title: "beginner"
+    - title: "I'm a beginner"
       payload: '/inform{{"level":"beginner"}}'
-    - title: "advanced"
+    - title: "I'm a experienced"
       payload: '/inform{{"level":"advanced"}}'
   utter_ask_game_mode:
-  - text: "Alice: Would you like to guess words or try to explain them?"
+  - text: "Alice: Thanks! And choose game mode you prefered:"
     buttons:
-    - title: "guess"
+    - title: "I want to guess"
       payload: '/inform{{"game_mode":"guess"}}'
-    - title: "explain"
+    - title: "I will explain"
       payload: '/inform{{"game_mode":"explain"}}'
   utter_game_instructions:
-  - text: 'Alice: Explain word "{word}" to Bob!'
+  - text: 'Alice: Challange yourself to explain the word "{word}"!'
     condition:
         - type: slot
           name: game_mode
           value: "explain"
     buttons:
-    - title: "start"
+    - title: "I do!"
       payload: "/start_game"
-  - text: 'Alice: Try to guess word related to topic "{topic}"'
+    - title: "Change settings (will restart)"
+      payload: '/restart'
+  - text: 'Alice: Try to guess word related to the topic "{topic}"'
     condition:
         - type: slot
           name: game_mode
           value: "guess"
     buttons:
-    - title: "start"
+    - title: "Ready!"
       payload: "/start_game"
+    - title: "Change settings (will restart)"
+      payload: '/restart'
   utter_teacher_response:
   - text: "Bob: {payload}"
   utter_correct_word:
-  - text: "Bob: It's {payload}!"
+  - text: 'Bob: Okay, the word is "{payload}", you did a good job!'
   utter_you_are_awesome:
-  - text: "Alice: Well done! Let's start another game :)"
+  - text: "Alice: Awesome! Let's continue with another word."
+  - text: "Alice: You both are so good! What about this word?"
+  - text: "Alice: Well done! Move on to the next word."
 
 session_config:
   session_expiration_time: 60
