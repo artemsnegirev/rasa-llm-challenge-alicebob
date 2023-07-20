@@ -5,7 +5,6 @@ intents:
   - affirm
   - deny
   - inform
-  - game_completed
   - start_game
 
 entities:
@@ -15,9 +14,9 @@ entities:
 actions:
 - action_select_random_topic
 - action_select_random_word
+- action_begin_of_the_game
 - action_ask_game_status
 - validate_game_form
-- action_begin_of_the_game
 
 slots:
   level:
@@ -59,32 +58,44 @@ forms:
 
 responses:
   utter_get_started:
-  - text: "Welcome"
+  - text: "Alice: Welcome"
   utter_ask_level:
-  - text: "What is your language level?"
+  - text: "Alice: What is your language level?"
     buttons:
     - title: "beginner"
       payload: '/inform{{"level":"beginner"}}'
     - title: "advanced"
       payload: '/inform{{"level":"advanced"}}'
   utter_ask_game_mode:
-  - text: "Would you like to guess words or try to explain them?"
+  - text: "Alice: Would you like to guess words or try to explain them?"
     buttons:
     - title: "guess"
       payload: '/inform{{"game_mode":"guess"}}'
     - title: "explain"
       payload: '/inform{{"game_mode":"explain"}}'
-  utter_game_settings:
-  - text: "{level} {game_mode} {topic} {word}"
+  utter_game_instructions:
+  - text: 'Alice: Explain word "{word}" to Bob!'
+    condition:
+        - type: slot
+          name: game_mode
+          value: "explain"
     buttons:
     - title: "start"
       payload: "/start_game"
-  utter_llm_output:
-  - text: "{text}"
+  - text: 'Alice: Try to guess word related to topic "{topic}"'
+    condition:
+        - type: slot
+          name: game_mode
+          value: "guess"
+    buttons:
+    - title: "start"
+      payload: "/start_game"
+  utter_teacher_response:
+  - text: "Bob: {payload}"
   utter_correct_word:
-  - text: "It's {word}!"
-  utter_lets_change_settings:
-  - text: "Alright! Let's change settings"
+  - text: "Bob: It's {payload}!"
+  utter_you_are_awesome:
+  - text: "Alice: Well done! Let's start another game :)"
 
 session_config:
   session_expiration_time: 60

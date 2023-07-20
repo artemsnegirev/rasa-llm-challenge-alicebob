@@ -96,7 +96,7 @@ class ValidateGameForm(FormValidationAction):
     def name(self) -> Text:
         return "validate_game_form"
 
-    def get_llm_response(self, tracker: Tracker) -> Text:
+    def get_teacher_response(self, tracker: Tracker) -> Text:
         """"""
 
         prompt = self.get_prompt(tracker)
@@ -164,10 +164,10 @@ class ValidateGameForm(FormValidationAction):
     ) -> Dict[Text, Any]:
 
         slot_value = None
-        response_template = "utter_llm_output"
+        response_template = "utter_teacher_response"
 
         # use previous context to generate next response
-        response_text = self.get_llm_response(tracker)
+        response_text = self.get_teacher_response(tracker)
 
         # check if context has any markers of completed game
         if self.is_game_completed(tracker, response_text):
@@ -181,7 +181,7 @@ class ValidateGameForm(FormValidationAction):
         # actual ask for game_status slot
         dispatcher.utter_message(
             response=response_template,
-            text=response_text
+            payload=response_text
         )
         
         return {"game_status": slot_value}
