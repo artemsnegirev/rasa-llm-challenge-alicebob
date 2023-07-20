@@ -11,8 +11,7 @@ from rasa_sdk.types import DomainDict
 from actions.utils import (
     database, 
     prompt_builder, 
-    openai_runner,
-    END_OF_GAME_MARKER
+    openai_runner
 )
 
 
@@ -113,6 +112,7 @@ class ValidateGameForm(FormValidationAction):
         
         return prompt_builder(
             game_mode=tracker.get_slot("game_mode"),
+            topic=tracker.get_slot("topic"),
             level=tracker.get_slot("level"),
             word=tracker.get_slot("word")
         )
@@ -132,12 +132,29 @@ class ValidateGameForm(FormValidationAction):
         messages = []
         for item in events[idx+1:]:
             if item["event"] in ["user", "bot"]:
+                if item["event"] == "user":
+                    role = "user"
+                else:
+                    role = "assistant"
+
                 messages.append({
-                    "role": item["event"], 
+                    "role": role, 
                     "content": item["text"]
                 })
 
         return messages
+
+    def is_game_completed(self, tracker: Tracker, last_bot_message: str) -> bool:
+        context = self.get_context(tracker)
+        
+        messages = [c["content"] for c in context] + [last_bot_message]
+
+        word: str = tracker.get_slot("word")
+        for m in reversed(messages):
+            if word.lower() in m.lower():
+                return True
+
+        return False
 
     async def extract_game_status(
         self, 
@@ -147,21 +164,24 @@ class ValidateGameForm(FormValidationAction):
     ) -> Dict[Text, Any]:
 
         slot_value = None
+        response_template = "utter_llm_output"
 
         # use previous context to generate next response
-        response = self.get_llm_response(tracker)
+        response_text = self.get_llm_response(tracker)
 
-        # check if llm sent marker of completed game
-        if END_OF_GAME_MARKER in response:
-            response = response.replace(END_OF_GAME_MARKER, "").strip()
+        # check if context has any markers of completed game
+        if self.is_game_completed(tracker, response_text):
+            if tracker.get_slot("game_mode") == "explain":
+                response_text = tracker.get_slot("word")
+                response_template = "utter_correct_word"
             
             # mark this game as completed
             slot_value = "completed"
         
         # actual ask for game_status slot
         dispatcher.utter_message(
-            response="utter_llm_output",
-            text=response
+            response=response_template,
+            text=response_text
         )
         
         return {"game_status": slot_value}

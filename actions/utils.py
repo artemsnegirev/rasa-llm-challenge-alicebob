@@ -3,9 +3,6 @@ import json
 import openai
 
 
-END_OF_GAME_MARKER = "@COMPLETED"
-
-
 class Database:
     def get_topics(self, level: str) -> list[str]:
         ...
@@ -77,9 +74,9 @@ class PromptBuilder:
             prompt = prompt.replace(f"{{{k}}}", v)
         return prompt
 
-    def __call__(self, game_mode: str, level: str, word: str) -> str:
+    def __call__(self, game_mode: str, level: str, topic: str, word: str) -> str:
         prompt = self.get_prompt(game_mode)
-        prompt = self.set_params(prompt, level=level, word=word)
+        prompt = self.set_params(prompt, level=level, topic=topic, word=word)
 
         return prompt
 
@@ -99,7 +96,7 @@ class OpenaiRunner(LLMRunner):
             model=self.model,
             messages=messages,
             temperature=0,
-            max_tokens=80
+            max_tokens=60
         )
 
         return response.choices[0].message["content"]
@@ -121,7 +118,7 @@ _debug_prompts = {
 prompt mode=guess word={word} level={level}
 """,
     "explain": """
-prompt mode=explain word={word} level={level}
+prompt mode=explain topic={topic} level={level}
 """
 }
 

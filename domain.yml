@@ -81,6 +81,8 @@ responses:
       payload: "/start_game"
   utter_llm_output:
   - text: "{text}"
+  utter_correct_word:
+  - text: "It's {word}!"
   utter_lets_change_settings:
   - text: "Alright! Let's change settings"
 
