@@ -135,14 +135,17 @@ class ValidateGameForm(FormValidationAction):
         messages = []
         for item in events[idx+1:]:
             if item["event"] in ["user", "bot"]:
+                text: str = item["text"]
+
                 if item["event"] == "user":
                     role = "user"
                 else:
                     role = "assistant"
+                    text = text.replace("Bob: ", "")
 
                 messages.append({
                     "role": role, 
-                    "content": item["text"]
+                    "content": text
                 })
 
         return messages
